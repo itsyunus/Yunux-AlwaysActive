@@ -1,0 +1,31 @@
+{
+    "manifest_version": 3,
+    "name": "Yunuz's Always Active",
+    "version": "1.0.0",
+    "description": "Keeps tabs always active - prevents detection of tab switches, fullscreen exits, and window focus loss",
+    "icons": {
+        "16": "icons/icon16.png",
+        "32": "icons/icon32.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    },
+    "permissions": [
+        "scripting"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "inject.js"
+            ],
+            "run_at": "document_start",
+            "all_frames": true,
+            "world": "MAIN"
+        }
+    ]
+}

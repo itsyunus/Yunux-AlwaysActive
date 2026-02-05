@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Test Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 40px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        .test-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            color: #00d4ff;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .status.protected {
+            background: rgba(0, 255, 136, 0.15);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+        }
+        .status.exposed {
+            background: rgba(255, 68, 68, 0.15);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            color: #ff4444;
+        }
+        .status-icon {
+            font-size: 1.5rem;
+        }
+        .description {
+            color: #aaa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .test-btn {
+            background: linear-gradient(135deg, #7b2cbf, #00d4ff);
+            border: none;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: opacity 0.3s, transform 0.2s;
+            width: 100%;
+        }
+        .test-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+        .log-section {
+            max-width: 1200px;
+            margin: 40px auto 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .log-section h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
+        #eventLog {
+            background: #0a0a0a;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            height: 200px;
+            overflow-y: auto;
+            color: #0f0;
+        }
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #222;
+        }
+        .log-entry.blocked {
+            color: #00ff88;
+        }
+        .log-entry.detected {
+            color: #ff4444;
+        }
+        .clear-btn {
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .instructions {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .instructions h3 {
+            color: #ffc107;
+            margin-bottom: 10px;
+        }
+        .instructions ul {
+            margin-left: 20px;
+            color: #ccc;
+        }
+        .instructions li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛡️ KeepTabsActive Extension Tester</h1>
+    <p class="subtitle">Test all protection features of your extension</p>
+
+    <div class="instructions">
+        <h3>📋 How to Test:</h3>
+        <ul>
+            <li><strong>Tab Switch:</strong> Switch to another tab and come back - the status should stay "Protected"</li>
+            <li><strong>Fullscreen:</strong> Click the fullscreen button, then press ESC - status should stay "Protected"</li>
+            <li><strong>Window Blur:</strong> Click outside Chrome or minimize - status should stay "Protected"</li>
+            <li><strong>Check the Event Log</strong> below to see if any events leaked through</li>
+        </ul>
+    </div>
+
+    <div class="test-grid">
+        <!-- Tab Visibility Test -->
+        <div class="test-card">
+            <h3>👁️ Tab Visibility</h3>
+            <div id="visibilityStatus" class="status protected">
+                <span class="status-icon">✅</span>
+                <span>Protected - Tab appears visible</span>
+            </div>
+            <p class="description">Tests if websites can detect when you switch tabs. Try switching to another tab and back.</p>
+        </div>
+
+        <!-- Fullscreen Test -->
+        <div class="test-card">
+            <h3>📺 Fullscreen Detection</h3>
+            <div id="fullscreenStatus" class="status protected">
+                <span class="status-icon">✅</span>
+                <span>Protected - Fullscreen spoofed</span>
+            </div>
+            <p class="description">Tests if websites can detect fullscreen exit. Enter fullscreen and press ESC.</p>
+            <button class="test-btn" onclick="enterFullscreen()">Enter Fullscreen (then press ESC)</button>
+        </div>
+
+        <!-- Focus Test -->
+        <div class="test-card">
+            <h3>🎯 Window Focus</h3>
+            <div id="focusStatus" class="status protected">
+                <span class="status-icon">✅</span>
+                <span>Protected - Focus maintained</span>
+            </div>
+            <p class="description">Tests if websites can detect when you click outside the browser window.</p>
+        </div>
+
+        <!-- hasFocus Test -->
+        <div class="test-card">
+            <h3>🔍 document.hasFocus()</h3>
+            <div id="hasFocusStatus" class="status protected">
+                <span class="status-icon">✅</span>
+                <span>Protected - Always returns true</span>
+            </div>
+            <p class="description">Tests the hasFocus() API that some websites use to detect focus loss.</p>
+            <button class="test-btn" onclick="checkHasFocus()">Check hasFocus()</button>
+        </div>
+
+        <!-- Hidden Property Test -->
+        <div class="test-card">
+            <h3>🙈 document.hidden</h3>
+            <div id="hiddenStatus" class="status protected">
+                <span class="status-icon">✅</span>
+                <span>Protected - Always returns false</span>
+            </div>
+            <p class="description">Tests the hidden property that websites use to detect tab visibility.</p>
+            <button class="test-btn" onclick="checkHidden()">Check document.hidden</button>
+        </div>
+
+        <!-- Visibility State Test -->
+        <div class="test-card">
+            <h3>📊 visibilityState</h3>
+            <div id="visStateStatus" class="status protected">
+                <span class="status-icon">✅</span>
+                <span>Protected - Always "visible"</span>
+            </div>
+            <p class="description">Tests the visibilityState property used by modern websites.</p>
+            <button class="test-btn" onclick="checkVisState()">Check visibilityState</button>
+        </div>
+    </div>
+
+    <div class="log-section">
+        <h3>📜 Event Log</h3>
+        <div id="eventLog">
+            <div class="log-entry">Waiting for events...</div>
+        </div>
+        <button class="clear-btn" onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        const log = document.getElementById('eventLog');
+        let eventCount = 0;
+
+        function addLog(message, isBlocked) {
+            eventCount++;
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${isBlocked ? 'blocked' : 'detected'}`;
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${isBlocked ? '🛡️ BLOCKED' : '⚠️ DETECTED'}: ${message}`;
+            log.insertBefore(entry, log.firstChild);
+        }
+
+        function clearLog() {
+            log.innerHTML = '<div class="log-entry">Log cleared - waiting for events...</div>';
+        }
+
+        function updateStatus(id, isProtected, message) {
+            const el = document.getElementById(id);
+            el.className = `status ${isProtected ? 'protected' : 'exposed'}`;
+            el.innerHTML = `
+                <span class="status-icon">${isProtected ? '✅' : '❌'}</span>
+                <span>${message}</span>
+            `;
+        }
+
+        // Test visibility change
+        document.addEventListener('visibilitychange', function() {
+            const hidden = document.hidden;
+            if (hidden) {
+                updateStatus('visibilityStatus', false, 'EXPOSED - Tab switch detected!');
+                addLog('visibilitychange event fired (hidden=' + hidden + ')', false);
+            } else {
+                addLog('visibilitychange event fired (visible)', false);
+            }
+        });
+
+        // Test fullscreen change
+        document.addEventListener('fullscreenchange', function() {
+            const isFullscreen = !!document.fullscreenElement;
+            if (!isFullscreen) {
+                updateStatus('fullscreenStatus', false, 'EXPOSED - Fullscreen exit detected!');
+                addLog('fullscreenchange: exited fullscreen', false);
+            } else {
+                addLog('fullscreenchange: entered fullscreen', false);
+            }
+        });
+
+        // Test blur
+        window.addEventListener('blur', function() {
+            updateStatus('focusStatus', false, 'EXPOSED - Window blur detected!');
+            addLog('window blur event fired', false);
+        });
+
+        // Test focus
+        window.addEventListener('focus', function() {
+            addLog('window focus event fired', false);
+        });
+
+        // Fullscreen function
+        function enterFullscreen() {
+            document.documentElement.requestFullscreen().catch(err => {
+                addLog('Fullscreen request failed: ' + err.message, true);
+            });
+        }
+
+        // Check hasFocus
+        function checkHasFocus() {
+            const result = document.hasFocus();
+            updateStatus('hasFocusStatus', result, result ? 'Protected - Returns true' : 'EXPOSED - Returns false!');
+            addLog('document.hasFocus() = ' + result, result);
+        }
+
+        // Check hidden
+        function checkHidden() {
+            const result = document.hidden;
+            updateStatus('hiddenStatus', !result, !result ? 'Protected - Returns false' : 'EXPOSED - Returns true!');
+            addLog('document.hidden = ' + result, !result);
+        }
+
+        // Check visibility state
+        function checkVisState() {
+            const result = document.visibilityState;
+            const isProtected = result === 'visible';
+            updateStatus('visStateStatus', isProtected, isProtected ? 'Protected - Returns "visible"' : 'EXPOSED - Returns "' + result + '"!');
+            addLog('document.visibilityState = "' + result + '"', isProtected);
+        }
+
+        // Initial checks
+        checkHasFocus();
+        checkHidden();
+        checkVisState();
+
+        // Periodic check
+        setInterval(() => {
+            const hidden = document.hidden;
+            const visState = document.visibilityState;
+            const hasFocus = document.hasFocus();
+            const fullscreen = document.fullscreenElement || document.fullscreen;
+            
+            // Update statuses silently
+            updateStatus('hiddenStatus', !hidden, !hidden ? 'Protected - Returns false' : 'EXPOSED!');
+            updateStatus('visStateStatus', visState === 'visible', visState === 'visible' ? 'Protected - Returns "visible"' : 'EXPOSED!');
+            updateStatus('hasFocusStatus', hasFocus, hasFocus ? 'Protected - Returns true' : 'EXPOSED!');
+        }, 1000);
+
+        addLog('Test page loaded - extension should be active', true);
+    </script>
+</body>
+</html>
